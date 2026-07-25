@@ -10,8 +10,8 @@ from __future__ import annotations
 import argparse
 import base64
 import copy
-import html
 import hashlib
+import html
 import json
 import os
 import random
@@ -22,6 +22,7 @@ from typing import Any
 from urllib.parse import parse_qsl, quote, unquote_plus, urlsplit
 
 import regex as timeout_regex
+import requests
 
 from .contribution_graph import (
     build_rule_contribution_graph,
@@ -34,13 +35,12 @@ from .lifecycle import (
 from .provider import openai_compatible_provider_from_env
 from .redteam import _infer_family, _mutate_payload
 from .views import (
-    _build_waf_views,
     _build_global_keyword_index,
+    _build_waf_views,
     _compile_rules_from_items,
     _extract_request_parts,
     _match_rule_on_views,
 )
-
 
 _XXE_RE = re.compile(r"(?is)<!doctype\s+[^>]*\[.*?<!entity\s+[^>]+(?:system|public)\s+['\"]")
 _NOSQLI_RE = re.compile(r"(?is)(?:\$(?:ne|gt|gte|lt|lte|regex|where)\b|\{\s*['\"]?\$(?:ne|regex|where))")
@@ -629,7 +629,7 @@ def _select_seed_rows(rows: list[dict[str, Any]], base: list[bool], limit: int) 
     selected: list[dict[str, Any]] = []
     while len(selected) < limit and buckets:
         progressed = False
-        for family in sorted(list(buckets)):
+        for family in sorted(buckets):
             if not buckets[family]:
                 continue
             selected.append(buckets[family].pop(0))
@@ -711,7 +711,7 @@ def _normalise_llm_rule(rule: dict[str, Any], rule_id: int) -> dict[str, Any]:
     item["detection_pattern"] = str(item.get("detection_pattern") or item.get("regex") or "")
     item["prefilter_pattern"] = str(item.get("prefilter_pattern") or "|".join(item.get("ac_keywords") or []))
     item["transforms"] = list(item.get("transforms") or item.get("transform_chain") or ["lowercase", "recursive_decode"])
-    item["groups"] = sorted(set([*list(item.get("groups") or []), "graft_llm", family]))
+    item["groups"] = sorted({*list(item.get("groups") or []), "graft_llm", family})
     item["source_file"] = "graft_offline_llm"
     item["action"] = "block"
     return item
@@ -805,7 +805,7 @@ def _json_array_from_text(raw: str) -> list[Any]:
         value = value[start : end + 1]
     parsed = json.loads(value)
     if not isinstance(parsed, list):
-        raise RuntimeError("LLM output must be a JSON array")
+        raise TypeError("LLM output must be a JSON array")
     return parsed
 
 
@@ -838,7 +838,7 @@ def _normalise_condition(
     default_transforms: list[str],
 ) -> dict[str, Any]:
     if not isinstance(value, dict):
-        raise RuntimeError("every structured condition must be a JSON object")
+        raise TypeError("every structured condition must be a JSON object")
     regex = str(value.get("regex") or value.get("pattern") or "").strip()
     if not regex:
         raise RuntimeError("every structured condition must contain a non-empty regex")
@@ -855,7 +855,7 @@ def _validate_llm_rules(raw: str) -> list[dict[str, Any]]:
     rules: list[dict[str, Any]] = []
     for index, value in enumerate(_json_array_from_text(raw), start=1):
         if not isinstance(value, dict):
-            raise RuntimeError(f"rule #{index} is not a JSON object")
+            raise TypeError(f"rule #{index} is not a JSON object")
         default_zones = _normalise_zones(value.get("match_zone") or value.get("zones"))
         default_transforms = _normalise_transforms(value.get("transform_chain") or value.get("transforms"))
         raw_logic = value.get("logic") if isinstance(value.get("logic"), dict) else {}
@@ -863,7 +863,7 @@ def _validate_llm_rules(raw: str) -> list[dict[str, Any]]:
         for group_name in logic:
             group = raw_logic.get(group_name) or []
             if not isinstance(group, list):
-                raise RuntimeError(f"rule #{index} logic.{group_name} must be a JSON array")
+                raise TypeError(f"rule #{index} logic.{group_name} must be a JSON array")
             logic[group_name] = [
                 _normalise_condition(
                     condition,

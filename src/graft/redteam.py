@@ -6,7 +6,6 @@ import random
 import re
 from urllib.parse import quote
 
-
 _SQLI_RE = re.compile(
     r"(?i)\b(?:union|select|sleep|benchmark|pg_sleep|waitfor|"
     r"information_schema|updatexml|extractvalue|or\s+\d+\s*=\s*\d+|"

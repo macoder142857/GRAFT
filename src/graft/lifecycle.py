@@ -11,7 +11,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-
 _TOKEN_RE = re.compile(r"[a-z0-9_.$:-]{3,}", re.IGNORECASE)
 
 
