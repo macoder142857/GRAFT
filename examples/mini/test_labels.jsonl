@@ -1,0 +1,3 @@
+{"sample_id":"test-001","label":true,"attack_family":"xss"}
+{"sample_id":"test-002","label":false,"attack_family":"benign"}
+{"sample_id":"test-003","label":false,"attack_family":"benign"}

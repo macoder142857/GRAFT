@@ -1,0 +1,30 @@
+[
+  {
+    "rule_id": 240001,
+    "name": "Structured script element detection",
+    "description": "Detect an executable script element after recursive decoding",
+    "family": "xss",
+    "attack_type": "xss",
+    "field": "query_values_norm",
+    "match_zone": [
+      "query_values_norm",
+      "body_values_norm"
+    ],
+    "transform_chain": [
+      "lowercase",
+      "recursive_decode",
+      "html_entity_decode"
+    ],
+    "fast_pattern": [
+      "<script"
+    ],
+    "regex": "<\\s*script\\b",
+    "logic": {
+      "all_of": [],
+      "any_of": [],
+      "none_of": []
+    },
+    "action": "block",
+    "source_file": "graft_offline_llm"
+  }
+]

@@ -1,0 +1,2 @@
+{"sample_id":"dev-001","raw_log":"GET /search?q=%3Cscript%3Ealert(1)%3C%2Fscript%3E HTTP/1.1\nHost: example.test\n\n"}
+{"sample_id":"dev-002","raw_log":"GET /search?q=quarterly+report HTTP/1.1\nHost: example.test\n\n"}

@@ -1,0 +1,2 @@
+{"sample_id":"val-001","label":true,"attack_family":"xss"}
+{"sample_id":"val-002","label":false,"attack_family":"benign"}

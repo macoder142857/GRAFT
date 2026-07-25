@@ -1,0 +1,2 @@
+{"sample_id":"val-001","raw_log":"GET /profile?bio=%3Cscript%3Econfirm(1)%3C%2Fscript%3E HTTP/1.1\nHost: example.test\n\n"}
+{"sample_id":"val-002","raw_log":"GET /profile?bio=security+researcher HTTP/1.1\nHost: example.test\n\n"}
